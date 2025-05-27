@@ -47,6 +47,17 @@ variable "app_docker_image" {
   default     = "tu-usuario/app:latest"
 }
 
+variable "access_id" {
+  description = ""
+  type        = string
+  sensitive   = true
+}
+variable "secret_key" {
+  description = ""
+  type        = string
+  sensitive   = true
+}
+
 # Crear VPC (Red Privada Virtual)
 resource "digitalocean_vpc" "main" {
   name     = "vpc-main"
