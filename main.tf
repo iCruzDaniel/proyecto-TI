@@ -151,7 +151,7 @@ resource "digitalocean_app" "main_app" {
       instance_size_slug = "basic-xxs"
 
       image {
-        registry      = "docker.io"
+        registry_type = "DOCKER_HUB"
         repository    = "dcruz04/yapergo-web"
         tag           = "dev"
       }
