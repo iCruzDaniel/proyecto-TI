@@ -62,7 +62,7 @@ variable "secret_key" {
 resource "digitalocean_vpc" "main" {
   name     = "vpc-main2"
   region   = "nyc3"
-  ip_range = "10.10.0.0/16"
+  ip_range = "10.10.0.0/21"
 }
 
 # Base de datos MySQL
