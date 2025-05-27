@@ -12,6 +12,8 @@ terraform {
 # Configurar el proveedor de DigitalOcean
 provider "digitalocean" {
   token = var.do_token
+  spaces_access_id  = var.access_id
+  spaces_secret_key = var.secret_key
 }
 
 # Variables
@@ -130,7 +132,7 @@ resource "digitalocean_loadbalancer" "api_lb" {
 resource "digitalocean_app" "main_app" {
   spec {
     name   = "mi-aplicacion"
-    region = "nyc"
+    region = "nyc3"
 
     service {
       name               = "web"
