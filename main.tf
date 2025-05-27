@@ -152,9 +152,9 @@ resource "digitalocean_app" "main_app" {
 
       image {
         registry_type = "DOCKER_HUB"
-        registry      = "tu-usuario"
-        repository    = "app"
-        tag           = "latest"
+        registry      = "dcruz04"
+        repository    = "yapergo-web"
+        tag           = "dev"
       }
 
       http_port = 8080
