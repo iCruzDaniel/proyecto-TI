@@ -67,7 +67,7 @@ resource "digitalocean_database_cluster" "mysql" {
 # Bucket para almacenamiento multimedia
 resource "digitalocean_spaces_bucket" "media" {
   name   = "mi-bucket-media-${random_string.bucket_suffix.result}"
-  region = "nyc1"
+  region = "nyc3"
   acl    = "private"
 }
 
