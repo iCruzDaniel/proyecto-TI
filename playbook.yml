@@ -1,0 +1,169 @@
+# playbook.yml - Playbook de Ansible para configurar los droplets
+
+---
+- name: Configurar servidores API
+  hosts: api_servers
+  become: yes
+  vars:
+    # Variables que puedes modificar
+    api1_image: "tu-usuario/api1:latest"
+    api2_image: "tu-usuario/api2:latest"
+    api1_port: 3001
+    api2_port: 3002
+    
+  tasks:
+    - name: Actualizar sistema
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Instalar Docker
+      block:
+        - name: Instalar dependencias
+          apt:
+            name:
+              - apt-transport-https
+              - ca-certificates
+              - curl
+              - gnupg
+              - lsb-release
+              - nginx
+            state: present
+
+        - name: Agregar clave GPG de Docker
+          apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
+
+        - name: Agregar repositorio de Docker
+          apt_repository:
+            repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+            state: present
+
+        - name: Instalar Docker
+          apt:
+            name:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-compose-plugin
+            state: present
+
+        - name: Iniciar y habilitar Docker
+          systemd:
+            name: docker
+            state: started
+            enabled: yes
+
+    - name: Configurar Nginx como proxy reverso
+      block:
+        - name: Crear configuración de Nginx
+          copy:
+            content: |
+              upstream api1 {
+                  server localhost:{{ api1_port }};
+              }
+              
+              upstream api2 {
+                  server localhost:{{ api2_port }};
+              }
+              
+              server {
+                  listen 80;
+                  server_name _;
+                  
+                  # Health check endpoint
+                  location /health {
+                      access_log off;
+                      return 200 "healthy\n";
+                      add_header Content-Type text/plain;
+                  }
+                  
+                  # API 1
+                  location /api1/ {
+                      proxy_pass http://api1/;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  }
+                  
+                  # API 2
+                  location /api2/ {
+                      proxy_pass http://api2/;
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  }
+              }
+            dest: /etc/nginx/sites-available/default
+          notify: restart nginx
+
+        - name: Habilitar y iniciar Nginx
+          systemd:
+            name: nginx
+            state: started
+            enabled: yes
+
+    - name: Configurar APIs con Docker
+      block:
+        - name: Detener contenedores existentes (si existen)
+          docker_container:
+            name: "{{ item }}"
+            state: absent
+          loop:
+            - api1
+            - api2
+          ignore_errors: yes
+
+        - name: Crear red Docker
+          docker_network:
+            name: api_network
+
+        - name: Ejecutar API 1 (la que se conecta a MySQL)
+          docker_container:
+            name: api1
+            image: "{{ api1_image }}"
+            state: started
+            restart_policy: always
+            ports:
+              - "{{ api1_port }}:{{ api1_port }}"
+            networks:
+              - name: api_network
+            env:
+              PORT: "{{ api1_port }}"
+              DATABASE_URL: "{{ hostvars['localhost']['database_url'] | default('mysql://user:pass@localhost:3306/db') }}"
+            pull: yes
+
+        - name: Ejecutar API 2 (la que se conecta al Bucket)
+          docker_container:
+            name: api2
+            image: "{{ api2_image }}"
+            state: started
+            restart_policy: always
+            ports:
+              - "{{ api2_port }}:{{ api2_port }}"
+            networks:
+              - name: api_network
+            env:
+              PORT: "{{ api2_port }}"
+              BUCKET_NAME: "{{ hostvars['localhost']['bucket_name'] | default('mi-bucket') }}"
+              SPACES_KEY: "{{ hostvars['localhost']['spaces_key'] | default('') }}"
+              SPACES_SECRET: "{{ hostvars['localhost']['spaces_secret'] | default('') }}"
+              SPACES_ENDPOINT: "https://nyc1.digitaloceanspaces.com"
+            pull: yes
+
+    - name: Configurar firewall
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "22"    # SSH
+        - "80"    # HTTP
+        - "443"   # HTTPS
+
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
