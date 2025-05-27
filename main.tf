@@ -12,8 +12,8 @@ terraform {
 # Configurar el proveedor de DigitalOcean
 provider "digitalocean" {
   token = var.do_token
-  spaces_access_id  = var.spaces_access_id
-  spaces_secret_key = var.spaces_secret_key
+  spaces_access_id  = var.access_id
+  spaces_secret_key = var.secret_key
 }
 
 # Variables
