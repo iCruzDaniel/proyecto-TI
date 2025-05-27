@@ -142,7 +142,7 @@ resource "digitalocean_loadbalancer" "api_lb" {
 # App Platform (tu aplicación principal)
 resource "digitalocean_app" "main_app" {
   spec {
-    name   = "mi-aplicacion"
+    name   = "yapergo"
     region = "nyc3"
 
     service {
@@ -152,8 +152,8 @@ resource "digitalocean_app" "main_app" {
 
       image {
         registry_type = "DOCKER_HUB"
-        registry      = "dcruz04"
-        repository    = "yapergo-web"
+        registry      = "docker.io"
+        repository    = "dcruz04/yapergo-web"
         tag           = "dev"
       }
 
