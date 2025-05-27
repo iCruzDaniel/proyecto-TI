@@ -48,7 +48,7 @@ variable "app_docker_image" {
 # Crear VPC (Red Privada Virtual)
 resource "digitalocean_vpc" "main" {
   name     = "vpc-main"
-  region   = "nyc1"
+  region   = "nyc3"
   ip_range = "10.10.0.0/16"
 }
 
@@ -58,7 +58,7 @@ resource "digitalocean_database_cluster" "mysql" {
   engine     = "mysql"
   version    = "8"
   size       = "db-s-1vcpu-1gb"
-  region     = "nyc1"
+  region     = "nyc3"
   node_count = 1
 
   private_network_uuid = digitalocean_vpc.main.id
@@ -82,7 +82,7 @@ resource "digitalocean_droplet" "api_servers" {
   count  = 2
   image  = "ubuntu-22-04-x64"
   name   = "api-server-${count.index + 1}"
-  region = "nyc1"
+  region = "nyc3"
   size   = "s-1vcpu-1gb"
   
   vpc_uuid = digitalocean_vpc.main.id
@@ -107,7 +107,7 @@ data "digitalocean_ssh_key" "main" {
 # Load Balancer
 resource "digitalocean_loadbalancer" "api_lb" {
   name   = "api-load-balancer"
-  region = "nyc1"
+  region = "nyc3"
   vpc_uuid = digitalocean_vpc.main.id
 
   forwarding_rule {
