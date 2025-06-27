@@ -4,7 +4,7 @@
 
 set -e  # Salir si hay algún error
 
-echo "🚀 Iniciando despliegue de infraestructura..."
+echo "Iniciando despliegue de infraestructura..."
 
 # Colores para los mensajes
 RED='\033[0;31m'
@@ -87,16 +87,16 @@ ansible-playbook -i inventory_dynamic.ini playbook.yml \
     --extra-vars "bucket_name=$BUCKET_NAME"
 
 # Mostrar información final
-show_message "🎉 ¡Despliegue completado exitosamente!"
+show_message "Despliegue completado exitosamente!"
 echo
-echo "📋 Información importante:"
-echo "========================="
-echo "🌐 URL de la aplicación: $(terraform output -raw app_url)"
-echo "⚖️  IP del Load Balancer: $(terraform output -raw load_balancer_ip)"
-echo "🗄️  Nombre del Bucket: $(terraform output -raw bucket_name)"
+echo "Información importante:"
+echo "======================"
+echo "URL de la aplicación: $(terraform output -raw app_url)"
+echo "IP del Load Balancer: $(terraform output -raw load_balancer_ip)"
+echo "Nombre del Bucket: $(terraform output -raw bucket_name)"
 echo
-echo "🔗 Las APIs están disponibles en:"
+echo "Las APIs están disponibles en:"
 echo "   - API 1: http://$(terraform output -raw load_balancer_ip)/api1/"
 echo "   - API 2: http://$(terraform output -raw load_balancer_ip)/api2/"
 echo
-echo "💡 Para destruir la infraestructura ejecuta: terraform destroy"
+echo "Para destruir la infraestructura ejecuta: terraform destroy"
